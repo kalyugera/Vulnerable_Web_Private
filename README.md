@@ -1,2 +1,2 @@
 # Vulnerable_Web_Private
-This is the vulnerable web appliaction.
+This is a vulnerable web appliaction.
