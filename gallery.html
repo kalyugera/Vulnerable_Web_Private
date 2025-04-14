@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Gallery Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .active-section {
+            display: block;
+        }
+
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin: 5px;
+            border-radius: 5px;
+        }
+
+        .gallery-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gallery-item {
+            position: relative;
+            width: 200px;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .post-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            padding: 16px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-xl font-bold" onclick="showSection('home')">User Gallery App</a>
+            <div id="nav-guest" class="space-x-4">
+                <button onclick="showSection('login')"
+                    class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Login</button>
+                <button onclick="showSection('register')"
+                    class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Register</button>
+            </div>
+            <div id="nav-user" class="space-x-4 hidden">
+                <button onclick="showSection('home')"
+                    class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Home</button>
+                <button onclick="showSection('upload')" class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Upload
+                    Image</button>
+                <button onclick="showSection('gallery')" class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">My
+                    Gallery</button>
+                <button onclick="showSection('create-post')"
+                    class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">Create Post</button>
+                <button onclick="showSection('profile')" class="px-3 py-1 bg-blue-500 rounded hover:bg-blue-700">My
+                    Profile</button>
+                <button onclick="logoutUser()" class="px-3 py-1 bg-red-500 rounded hover:bg-red-700">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="page-section container mx-auto p-6">
+        <div id="welcome-guest" class="text-center py-10">
+            <h1 class="text-3xl font-bold mb-4">Welcome to User Gallery App</h1>
+            <p class="mb-6">Please login or register to access your gallery and upload images.</p>
+            <div class="space-x-4">
+                <button onclick="showSection('login')"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Login</button>
+                <button onclick="showSection('register')"
+                    class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Register</button>
+            </div>
+        </div>
+
+        <div id="welcome-user" class="hidden py-10">
+            <h1 class="text-3xl font-bold mb-4">Welcome, <span id="user-name-display"></span>!</h1>
+            <p class="mb-6">What would you like to do today?</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                    <h2 class="text-xl font-semibold mb-3">Upload Images</h2>
+                    <p class="mb-4">Add new images to your personal gallery.</p>
+                    <button onclick="showSection('upload')"
+                        class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Upload Images
+                    </button>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                    <h2 class="text-xl font-semibold mb-3">View Gallery</h2>
+                    <p class="mb-4">Browse through your personal image collection.</p>
+                    <button onclick="showSection('gallery')"
+                        class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        View Gallery
+                    </button>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                    <h2 class="text-xl font-semibold mb-3">Create Post</h2>
+                    <p class="mb-4">Share your thoughts with a new post.</p>
+                    <button onclick="showSection('create-post')"
+                        class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Create Post
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h2 class="text-2xl font-semibold mb-4">Recent Posts</h2>
+                <div id="recent-posts" class="space-y-4"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login" class="page-section container mx-auto p-6 max-w-md">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
+            <form id="login-form" class="space-y-4" action="login.php" method="POST">
+
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" name="email"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" name="password"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Login</button>
+            </form>
+            <div class="mt-4 text-center">
+                <p>Don't have an account? <a href="#" onclick="showSection('register')"
+                        class="text-blue-600 hover:underline">Register</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Register Section -->
+    <section id="register" class="page-section container mx-auto p-6 max-w-md">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-center">Register</h2>
+            <form id="register-form" class="space-y-4" action="register.php" method="POST">
+                <div>
+                    <label for="register-username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="register-username" name="register-username"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" name="register-email"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="register-password" name="register-password"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <button type="submit"
+                    class="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700">Register</button>
+            </form>
+            <div class="mt-4 text-center">
+                <p>Already have an account? <a href="#" onclick="showSection('login')"
+                        class="text-blue-600 hover:underline">Login</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Profile Section -->
+    <section id="profile" class="page-section container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">My Profile</h2>
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold mb-4">Profile Information</h3>
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <span class="font-medium">Username:</span>
+                        <span id="profile-username"></span>
+                    </div>
+                    <div>
+                        <span class="font-medium">Email:</span>
+                        <span id="profile-email"></span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-6">
+
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Change Password</h3>
+                <form id="change-password-form" class="space-y-4" action="changePassword.php" method="POST">
+                    <div>
+                        <label for="current-password" class="block text-sm font-medium text-gray-700">Current
+                            Password</label>
+                        <input type="password" id="current-password"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                    </div>
+                    <div>
+                        <label for="new-password" class="block text-sm font-medium text-gray-700">New Password</label>
+                        <input type="password" id="new-password"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Update
+                        Password</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upload Section -->
+    <section id="upload" class="page-section container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">Upload Images</h2>
+            <form id="upload-form" class="space-y-4 " action="uploadImage.php" method="POST">
+                <div>
+                    <label for="image-title" class="block text-sm font-medium text-gray-700">Image Title</label>
+                    <input type="text" id="image-title"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <div>
+                    <label for="image-file" class="block text-sm font-medium text-gray-700">Select Image</label>
+                    <input type="file" id="image-file" accept="image/*" class="mt-1 block w-full" required>
+                </div>
+                <div id="image-preview-container" class="hidden mt-4">
+                    <h3 class="text-sm font-medium text-gray-700 mb-2">Preview:</h3>
+                    <img id="image-preview" class="max-w-xs max-h-60 rounded-md" alt="Image preview">
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Upload
+                    Image</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="page-section container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6">My Gallery</h2>
+            <div id="gallery-container" class="gallery-container"></div>
+        </div>
+    </section>
+
+    <!-- Create Post Section -->
+    <section id="create-post" class="page-section container mx-auto p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-6">Create Post</h2>
+            <form id="post-form" class="space-y-4" action="create_post.php" method="POST">
+                <div>
+                    <label for="post-title" class="block text-sm font-medium text-gray-700">Post Title</label>
+                    <input type="text" id="post-title"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
+                </div>
+                <div>
+                    <label for="post-content" class="block text-sm font-medium text-gray-700">Content</label>
+                    <textarea id="post-content" rows="5"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required></textarea>
+                </div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Create
+                    Post</button>
+            </form>
+        </div>
+    </section>
+
+    <script>
+        function getPosts() {
+            return JSON.parse(localStorage.getItem('posts') || '[]');
+        }
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('users') || '[]');
+        }
+
+        function getCurrentUser() {
+            return JSON.parse(localStorage.getItem('users') || '[]');
+        }
+        function getImages() {
+            return JSON.parse(localStorage.getItem('images') || '[]');
+        }
+        function loginUser(data) {
+            localStorage.setItem('users', JSON.stringify(data));
+            const userNav = document.getElementById('nav-user');
+            const guestNav = document.getElementById('nav-guest');
+            userNav.classList.remove('hidden');
+            guestNav.classList.add('hidden');
+            alert("Login successful!");
+            showSection('home');
+
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = getCurrentUser();
+
+            // If `user` is an array, get the first user (modify as needed)
+            const currentUser = Array.isArray(user) ? user[0] : user;
+
+            if (currentUser) {
+                document.getElementById('profile-username').textContent = currentUser.username || 'N/A';
+                document.getElementById('profile-email').textContent = currentUser.email || 'N/A';
+            } else {
+                document.getElementById('profile-username').textContent = 'Guest';
+                document.getElementById('profile-email').textContent = 'Not available';
+            }
+        });
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active-section');
+            });
+
+            // Show the requested section
+            document.getElementById(sectionId).classList.add('active-section');
+
+            // Special handling for certain sections
+            if (sectionId === 'home') {
+                updateHomeSection();
+            } else if (sectionId === 'gallery') {
+                fetchImages()
+
+            } else if (sectionId === 'profile') {
+                loadUserProfile();
+            }
+        }
+        function updateNavigation() {
+            const currentUser = getCurrentUser();
+            const guestNav = document.getElementById('nav-guest');
+            const userNav = document.getElementById('nav-user');
+
+            if (currentUser) {
+                guestNav.classList.add('hidden');
+                userNav.classList.remove('hidden');
+            } else {
+                guestNav.classList.remove('hidden');
+                userNav.classList.add('hidden');
+            }
+        }
+        function updateHomeSection() {
+            const currentUser = getCurrentUser();
+            const welcomeGuest = document.getElementById('welcome-guest');
+            const welcomeUser = document.getElementById('welcome-user');
+
+            if (currentUser) {
+                welcomeGuest.classList.add('hidden');
+                welcomeUser.classList.remove('hidden');
+                document.getElementById('user-name-display').textContent = currentUser.username;
+                fetchPosts();
+            } else {
+                welcomeGuest.classList.remove('hidden');
+                welcomeUser.classList.add('hidden');
+            }
+        }
+
+        function getAllPosts() {
+            const posts = getPosts();
+            return posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+        function loadUserProfile() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                showSection('login');
+                return;
+            }
+
+            document.getElementById('profile-username').textContent = currentUser.username;
+            document.getElementById('profile-email').textContent = currentUser.email;
+        }
+        function loadRecentPosts() {
+            const postsContainer = document.getElementById('recent-posts');
+            postsContainer.innerHTML = '';
+
+            fetch('getPost.php') // Fetch posts for the logged-in user
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        postsContainer.innerHTML = `<p class="text-gray-500">${data.message}</p>`;
+                        return;
+                    }
+
+                    const allPosts = data.posts;
+                    const recentPosts = allPosts.slice(0, 5); // Show only last 5 posts
+                    if (recentPosts.length === 0) {
+                        postsContainer.innerHTML = '<p class="text-gray-500">No posts yet. Create one!</p>';
+                        return;
+                    }
+
+                    recentPosts.forEach(post => {
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-item';
+
+                        postElement.innerHTML = `
+                    <h3 class="text-xl font-semibold">${post.title}</h3>
+                    <p class="text-sm text-gray-500 mb-2">By ${post.username} on ${new Date(post.created_at).toLocaleDateString()}</p>
+                    <p>${post.content}</p>
+                `;
+
+                        postsContainer.appendChild(postElement);
+                    });
+                })
+                .catch(error => {
+                    postsContainer.innerHTML = '<p class="text-gray-500">Error loading posts. Please try again later.</p>';
+                });
+        }
+
+        function getUserImages(username) {
+            const images = getImages();
+            return images.filter(img => img.username === username);
+        }
+        function loadUserGallery() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                showSection('login');
+                return;
+            }
+
+            const galleryContainer = document.getElementById('gallery-container');
+            galleryContainer.innerHTML = '';
+
+            const userImages = getUserImages(currentUser.username);
+   
+            if (userImages.length === 0) {
+                galleryContainer.innerHTML = '<p class="text-gray-500">No images yet. Upload some!</p>';
+                return;
+            }
+            userImages.forEach(image => {
+                const imageCard = document.createElement('div');
+                imageCard.className = 'gallery-item';
+
+                // Properly encode filename in case it has spaces or special characters
+                const safePath = encodeURI(image.filename);
+                const fullImagePath = `http://localhost/gallery/${safePath}`;
+
+                imageCard.innerHTML = `
+        <img src="${fullImagePath}" alt="${image.title}" class="gallery-image">
+        <div class="p-2">
+            <h3 class="font-semibold">${image.title}</h3>
+            <p class="text-xs text-gray-500">${new Date(image.uploaded_at).toLocaleDateString()}</p>
+        </div>
+    `;
+
+                galleryContainer.appendChild(imageCard);
+            });
+
+        }
+        function logoutUser() {
+            localStorage.removeItem('users');
+            updateNavigation();
+            showSection('login');
+            guestNav.classList.remove('hidden');
+            userNav.classList.add('hidden');
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+        document.getElementById('register-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('register.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.text())
+                .then(response => {
+                    alert(response); // You can style this better later
+                    showSection('login'); // Redirect user to login section
+                })
+                .catch(err => {
+                    alert("Registration  failed.");
+                    console.error(err);
+                });
+        });
+        // SAVING THE POSTS 
+
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        loginUser(data)
+                    } else {
+                        alert(data.message || "Login failed. hewrer");
+                    }
+                })
+                .catch(error => {
+                    console.error(error,);
+                    alert("Login failed. Please try asdasd again.");
+                });
+        });
+        document.getElementById("post-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById("post-title").value;
+            const content = document.getElementById("post-content").value;
+            const user = JSON.parse(localStorage.getItem("users")); // assumes user is stored in localStorage
+
+            if (!user || !user.email) {
+                alert("User not logged in.");
+                return;
+            }
+
+            const response = await fetch("create_post.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    content: content,
+                    email: user.email,
+                    username: user.username
+                })
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                alert("Post created!");
+                document.getElementById("post-form").reset();
+
+            } else {
+                alert("Failed to create post: " + result.message);
+            }
+        });
+        // Fetching the post 
+        async function fetchPosts() {
+            try {
+                const response = await fetch("getPost.php");
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    localStorage.setItem('posts', JSON.stringify(result.posts));
+                    loadRecentPosts()
+                } else {
+                    alert("Failed to load posts.");
+                }
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+            }
+        }
+
+
+
+        document.getElementById("image-file").addEventListener("change", function () {
+            const file = this.files[0];
+            const preview = document.getElementById("image-preview");
+            const container = document.getElementById("image-preview-container");
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    container.classList.remove("hidden");
+                };
+                reader.readAsDataURL(file);
+            } else {
+                container.classList.add("hidden");
+            }
+        });
+
+        document.getElementById("upload-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById("image-title").value;
+            const fileInput = document.getElementById("image-file");
+            const file = fileInput.files[0];
+
+            const user = JSON.parse(localStorage.getItem("users"));
+            if (!user || !user.email || !user.username) {
+                alert("User not logged in.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("title", title);
+            formData.append("image", file);
+            formData.append("email", user.email);
+            formData.append("username", user.username);
+
+            const response = await fetch("uploadImage.php", {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+            if (result.status === "success") {
+                alert("Image uploaded successfully!");
+                document.getElementById("upload-form").reset();
+                document.getElementById("image-preview-container").classList.add("hidden");
+            } else {
+                alert("Upload failed: " + result.message);
+            }
+        });
+
+        async function fetchImages() {
+            try {
+                const response = await fetch("getImages.php");
+                const result = await response.json();
+                if (result.status === "success" && Array.isArray(result.images)) {
+                    localStorage.setItem('images', JSON.stringify(result.images));
+                    loadUserGallery();
+                } else {
+                    console.warn("Unexpected response:", result);
+                }
+            } catch (err) {
+                console.error("Error loading images:", err);
+            }
+        }
+
+        document.getElementById('change-password-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+
+            const formData = new FormData();
+            formData.append('currentPassword', currentPassword);
+            formData.append('newPassword', newPassword);
+
+            const response = await fetch('changePassword.php', {
+                method: 'POST',
+                body: formData // ✅ no need for Content-Type header
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            if (result.message === 'Password updated successfully') {
+                // Reset the form fields if the password is successfully updated
+                document.getElementById('change-password-form').reset();
+            }
+        });
+    </script>
+</body>
+
+</html>
