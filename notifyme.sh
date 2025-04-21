@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WEBHOOK_URL="https://discord.com/api/webhooks/1363994991432564767/BrkN2vjvTlvWHa95YQfBY-lyBEm0BMCOdnVmZljSLNhMCgepq3Lnnf_m4DKXDiB-sE8y"
+WEBHOOK_URL="https://discord.com/api/webhooks/yourtoken"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 MESSAGE="✅ Task executed successfully at $TIMESTAMP"
 
