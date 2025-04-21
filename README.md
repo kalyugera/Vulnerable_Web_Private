@@ -1,1 +1,1 @@
-# Vulnerable Web Application Documentation
+# Vulnerable Web Application 
